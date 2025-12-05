@@ -1,0 +1,43 @@
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-error.log
+.pnp.*
+.pnp.js
+
+# Environment files
+.env
+.env.*.local
+
+# Baileys auth state folder
+auth/
+
+# Build / output
+dist/
+build/
+coverage/
+.cache/
+.cache/
+.next/
+.out/
+.parcel-cache/
+.serverless/
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs
+.vscode/
+.idea/
+
+# Misc
+*.local
+*.pid
+*.seed
+.node_repl_history
