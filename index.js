@@ -67,7 +67,7 @@ async function startBot() {
     // Render keep-alive
     const app = express();
     app.get("/", (req, res) => res.send("Bot is running"));
-    app.listen(process.env.PORT || 8080);
+    app.listen(process.env.PORT || 3000);
 }
 
 
