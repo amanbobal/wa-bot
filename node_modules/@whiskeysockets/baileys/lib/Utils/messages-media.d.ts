@@ -1,9 +1,9 @@
 import { Boom } from '@hapi/boom';
+import { type AxiosRequestConfig } from 'axios';
 import { Readable, Transform } from 'stream';
 import { URL } from 'url';
 import { proto } from '../../WAProto/index.js';
-import { type MediaType } from '../Defaults/index.js';
-import type { DownloadableMessage, MediaConnInfo, MediaDecryptionKeyInfo, SocketConfig, WAMediaUpload, WAMediaUploadFunction, WAMessageContent, WAMessageKey } from '../Types/index.js';
+import type { DownloadableMessage, MediaConnInfo, MediaDecryptionKeyInfo, MediaType, SocketConfig, WAMediaUpload, WAMediaUploadFunction, WAMessageContent } from '../Types/index.js';
 import { type BinaryNode } from '../WABinary/index.js';
 import type { ILogger } from './logger.js';
 export declare const hkdfInfoKey: (type: MediaType) => string;
@@ -37,9 +37,7 @@ export declare function getAudioDuration(buffer: Buffer | string | Readable): Pr
 export declare function getAudioWaveform(buffer: Buffer | string | Readable, logger?: ILogger): Promise<Uint8Array<ArrayBuffer> | undefined>;
 export declare const toReadable: (buffer: Buffer) => Readable;
 export declare const toBuffer: (stream: Readable) => Promise<Buffer<ArrayBuffer>>;
-export declare const getStream: (item: WAMediaUpload, opts?: RequestInit & {
-    maxContentLength?: number;
-}) => Promise<{
+export declare const getStream: (item: WAMediaUpload, opts?: AxiosRequestConfig) => Promise<{
     readonly stream: Readable;
     readonly type: "buffer";
 } | {
@@ -62,13 +60,13 @@ export declare function generateThumbnail(file: string, mediaType: 'video' | 'im
         height: number;
     } | undefined;
 }>;
-export declare const getHttpStream: (url: string | URL, options?: RequestInit & {
+export declare const getHttpStream: (url: string | URL, options?: AxiosRequestConfig & {
     isStream?: true;
 }) => Promise<Readable>;
 type EncryptedStreamOptions = {
     saveOriginalFileIfRequired?: boolean;
     logger?: ILogger;
-    opts?: RequestInit;
+    opts?: AxiosRequestConfig;
 };
 export declare const encryptedStream: (media: WAMediaUpload, mediaType: MediaType, { logger, saveOriginalFileIfRequired, opts }?: EncryptedStreamOptions) => Promise<{
     mediaKey: Buffer<ArrayBufferLike>;
@@ -82,7 +80,7 @@ export declare const encryptedStream: (media: WAMediaUpload, mediaType: MediaTyp
 export type MediaDownloadOptions = {
     startByte?: number;
     endByte?: number;
-    options?: RequestInit;
+    options?: AxiosRequestConfig<{}>;
 };
 export declare const getUrlFromDirectPath: (directPath: string) => string;
 export declare const downloadContentFromMessage: ({ mediaKey, directPath, url }: DownloadableMessage, type: MediaType, opts?: MediaDownloadOptions) => Promise<Transform>;
@@ -96,9 +94,9 @@ export declare const getWAUploadToServer: ({ customUploadHosts, fetchAgent, logg
 /**
  * Generate a binary node that will request the phone to re-upload the media & return the newly uploaded URL
  */
-export declare const encryptMediaRetryRequest: (key: WAMessageKey, mediaKey: Buffer | Uint8Array, meId: string) => Promise<BinaryNode>;
+export declare const encryptMediaRetryRequest: (key: proto.IMessageKey, mediaKey: Buffer | Uint8Array, meId: string) => Promise<BinaryNode>;
 export declare const decodeMediaRetryNode: (node: BinaryNode) => {
-    key: WAMessageKey;
+    key: import("../Types/index.js").WAMessageKey;
     media?: {
         ciphertext: Uint8Array;
         iv: Uint8Array;

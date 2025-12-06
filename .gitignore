@@ -41,3 +41,4 @@ desktop.ini
 *.pid
 *.seed
 .node_repl_history
+auth_info/
