@@ -1,4 +1,3 @@
-// server.js - Main entry point
 const {
   default: makeWASocket,
   DisconnectReason,

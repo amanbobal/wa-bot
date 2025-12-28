@@ -1,4 +1,5 @@
 // src/groqIntegration.js - Groq AI integration
+require("dotenv").config();
 const Groq = require("groq-sdk");
 
 const groq = new Groq({
