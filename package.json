@@ -1,6 +1,6 @@
 {
   "name": "wa-bot",
-  "version": "0.69",
+  "version": "1.6.7",
   "description": "WhatsApp Bot",
   "main": "server.js",
   "scripts": {
@@ -20,7 +20,9 @@
     "express": "^4.18.2",
     "pino": "^8.19.0",
     "axios": "^1.6.5",
-    "qrcode-terminal": "^0.12.0"
+    "qrcode-terminal": "^0.12.0",
+    "qrcode": "^1.5.3",
+    "groq-sdk": "^0.4.2"
   },
   "devDependencies": {
     "nodemon": "^3.0.3"
