@@ -1,29 +1,21 @@
 {
-  "name": "wa-bot",
-  "version": "0.69",
-  "description": "WhatsApp Bot",
-  "main": "server.js",
+  "name": "railway-keep-alive-pinger",
+  "version": "1.0.0",
+  "description": "Keep-alive pinger for Render app with random intervals",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node index.js"
   },
   "keywords": [
-    "whatsapp",
-    "bot",
-    "baileys"
+    "keep-alive",
+    "pinger",
+    "render"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Your Name",
+  "license": "MIT",
   "dependencies": {
-    "@whiskeysockets/baileys": "^6.7.9",
-    "@hapi/boom": "^10.0.1",
-    "express": "^4.18.2",
-    "pino": "^8.19.0",
-    "axios": "^1.6.5",
-    "qrcode-terminal": "^0.12.0"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.3"
+    "axios": "^1.6.7",
+    "express": "^4.18.2"
   },
   "engines": {
     "node": ">=18.0.0"
