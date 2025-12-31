@@ -1,3 +1,5 @@
+// server.js - Enhanced main entry point
+require("dotenv").config();
 const {
   default: makeWASocket,
   DisconnectReason,
@@ -6,24 +8,22 @@ const {
 } = require("@whiskeysockets/baileys");
 const { Boom } = require("@hapi/boom");
 const pino = require("pino");
-const express = require("express");
 const qrcode = require("qrcode-terminal");
-const QRCode = require("qrcode");
 
 // Import modules
 const {
   startWebServer,
   updateBotStatus,
-  getCurrentQR,
   setCurrentQR,
 } = require("./src/webServer");
 const { handleCommand } = require("./src/commands");
-const { chatWithTobias } = require("./src/groqIntegration");
+const { chatWithAI, extractMentionedUsers } = require("./src/groqIntegration");
 const { deleteMessage, isUserAdmin, isBotAdmin } = require("./src/utils");
 const {
   hasUnauthorizedContent,
   isModerationEnabled,
 } = require("./src/moderation");
+const { startRandomJokeScheduler } = require("./src/randomJokeScheduler");
 const { BOT_JID } = require("./src/config");
 
 // Start web server
@@ -39,7 +39,7 @@ async function startBot() {
     version,
     logger: pino({ level: "silent" }),
     auth: state,
-    browser: ["WhatsApp Bot", "Chrome", "1.0.0"],
+    browser: ["WhatsApp Bot(Beta)", "Chrome", "1.0.0"],
   });
 
   sock.ev.on("creds.update", saveCreds);
@@ -50,11 +50,7 @@ async function startBot() {
     if (qr) {
       console.log("\n📱 QR Code generated! Scan with WhatsApp:\n");
       qrcode.generate(qr, { small: true });
-      console.log(
-        "\nOpen WhatsApp > Settings > Linked Devices > Link a Device"
-      );
       console.log(`\n🌐 Or visit: http://localhost:${PORT}/qr\n`);
-
       setCurrentQR(qr);
     }
 
@@ -74,10 +70,12 @@ async function startBot() {
     } else if (connection === "open") {
       console.log("✅ WhatsApp Bot Connected!");
       console.log("Bot JID:", BOT_JID);
-      console.log("Bot user ID from socket:", sock.user.id);
 
       updateBotStatus({ connected: true });
       setCurrentQR(null);
+
+      // Start random joke scheduler (1b)
+      startRandomJokeScheduler(sock);
     }
   });
 
@@ -117,19 +115,17 @@ async function startBot() {
 
           const senderNumber = senderId.split("@")[0];
           await sock.sendMessage(groupId, {
-            text: `⚠️ @${senderNumber} Unauthorized content detected and removed.\nPlease avoid posting unsolicited links or spam.`,
+            text: `⚠️ @${senderNumber} Unauthorized content detected and removed.`,
             mentions: [senderId],
           });
         }
       }
 
-      // Check if message is a command
       const hasCommand = messageText.includes("/");
 
       if (hasCommand) {
         await handleCommand(sock, message);
       } else if (messageText) {
-        // Check if bot was mentioned for AI chat
         const mentionedJids =
           msg?.extendedTextMessage?.contextInfo?.mentionedJid || [];
         const botMentioned =
@@ -137,27 +133,61 @@ async function startBot() {
           mentionedJids.some((jid) => jid.includes("145874957156514")) ||
           messageText.includes("@145874957156514");
 
-        if (botMentioned && !hasCommand) {
-          console.log("Bot mentioned for chat, sending to Groq AI");
+        // 1f: Check if this is a reply to bot's message
+        const quotedMessage =
+          msg?.extendedTextMessage?.contextInfo?.quotedMessage;
+        const quotedParticipant =
+          msg?.extendedTextMessage?.contextInfo?.participant;
+        const isReplyToBot =
+          quotedParticipant && quotedParticipant.includes("145874957156514");
+
+        if ((botMentioned || isReplyToBot) && !hasCommand) {
+          console.log("Bot mentioned/replied to, sending to AI");
 
           let cleanText = messageText.replace(/@\d+/g, "").trim();
 
           if (cleanText) {
             try {
               await sock.sendPresenceUpdate("composing", groupId);
-              const aiResponse = await chatWithTobias(groupId, cleanText);
 
+              // 1g: Extract mentions for AI context
+              const mentions = extractMentionedUsers(cleanText, mentionedJids);
+
+              // 1g: Check if user wants bot to say something to someone
+              let targetMention = null;
+              const sayToPattern = /say (?:something )?to @?(\d+)/i;
+              const match = cleanText.match(sayToPattern);
+              if (match && mentionedJids.length > 0) {
+                targetMention =
+                  mentionedJids.find((jid) => jid.includes(match[1])) ||
+                  mentionedJids[0];
+              }
+
+              const aiResponse = await chatWithAI(groupId, cleanText, {
+                mentions,
+                targetMention,
+                isReply: isReplyToBot,
+              });
+
+              // 1g: Format response with mentions
               const senderNumber = senderId.split("@")[0];
+              let responseText = `@${senderNumber} ${aiResponse}`;
+              let responseMentions = [senderId];
+
+              if (targetMention) {
+                responseMentions.push(targetMention);
+              }
+
               await sock.sendMessage(groupId, {
-                text: `@${senderNumber} ${aiResponse}`,
-                mentions: [senderId],
+                text: responseText,
+                mentions: responseMentions,
               });
 
               await sock.sendPresenceUpdate("paused", groupId);
             } catch (error) {
               console.error("Error in AI chat:", error);
               await sock.sendMessage(groupId, {
-                text: "My apologies. I am temporarily unavailable.",
+                text: "Arre yaar technical issue hai, baad mein baat karte hain 🙏",
               });
             }
           }

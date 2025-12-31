@@ -1,8 +1,10 @@
-// src/webServer.js - Web server and endpoints
+// src/webServer.js - Enhanced web server with admin panel
 const express = require("express");
 const QRCode = require("qrcode");
+const { setupAdminPanel } = require("./adminPanel");
 
 const app = express();
+app.use(express.json());
 
 let currentQRCode = null;
 let qrCodeExpiry = null;
@@ -12,14 +14,12 @@ let botStatus = {
   reconnectCount: 0,
 };
 
-// Update bot status
 function updateBotStatus(updates) {
   if (updates.connected !== undefined) botStatus.connected = updates.connected;
   if (updates.reconnectCount === true) botStatus.reconnectCount++;
   botStatus.lastActivity = new Date();
 }
 
-// Get/Set QR code
 function getCurrentQR() {
   return currentQRCode;
 }
@@ -45,7 +45,7 @@ app.get("/", (req, res) => {
   res.send(
     `WhatsApp Bot Status: ${
       botStatus.connected ? "✅ Connected" : "❌ Disconnected"
-    } | Uptime: ${Math.floor(process.uptime() / 60)}m`
+    } | Uptime: ${Math.floor(process.uptime() / 60)}m | Admin Panel: /sys-admin`
   );
 });
 
@@ -82,12 +82,12 @@ app.get("/qr", async (req, res) => {
   botStatus.lastActivity = new Date();
 
   if (botStatus.connected) {
-    res.send("Bot is already connected! No QR code needed.");
+    res.send("Bot is already connected!");
     return;
   }
 
   if (!currentQRCode) {
-    res.send("Waiting for QR code... Please refresh in a few seconds.");
+    res.send("Waiting for QR code... Refresh in a few seconds.");
     return;
   }
 
@@ -122,28 +122,17 @@ app.get("/qr", async (req, res) => {
   }
 });
 
-// Self-ping mechanism
-let selfPingInterval = null;
-function startSelfPing(port) {
-  if (selfPingInterval) return;
+// Setup admin panel routes
+setupAdminPanel(app);
 
-  selfPingInterval = setInterval(() => {
-    const timeSinceActivity = Date.now() - botStatus.lastActivity.getTime();
+// Note: Self-ping removed, replaced with random joke scheduler
 
-    if (timeSinceActivity > 5 * 60 * 1000) {
-      console.log("🔄 Self-ping to prevent sleep");
-      botStatus.lastActivity = new Date();
-    }
-  }, 8 * 60 * 1000);
-}
-
-// Start web server
 function startWebServer(port) {
   app.listen(port, () => {
     console.log(`🚀 Server running on port ${port}`);
     console.log(`📱 QR Code: http://localhost:${port}/qr`);
     console.log(`🔍 Health: http://localhost:${port}/health`);
-    startSelfPing(port);
+    console.log(`🔐 Admin: http://localhost:${port}/sys-admin`);
   });
 }
 

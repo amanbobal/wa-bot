@@ -52,10 +52,10 @@ async function handleAbuse(sock, groupId, targetJid) {
       "aaja apne lode se teri gend ki gehrai naapu💦",
       "Lodu, muft ke chodu, AUKAAT ME REH SAMJHA😡",
       "tere sir mein negro da lauda fek kar, teri yaddaasht mita dunga🙏🏿",
-      "अपना के मूस से चोद लीं🗣️",
       "bkl teri shakal aisi hai jisse GB road ki randi dekhkr wahi thuk de😂",
       "sarso ka tel lagakr tyaar reh chote.....aara hu tere ghar khudai krne👍💦",
       "dalle teri chulbuli gend pr hayabhosda chadha dunga🚴",
+      "Chudi hui chipkali ki choot ke jhaat ke pasine🖕",
     ];
 
     let audioFiles = [];
