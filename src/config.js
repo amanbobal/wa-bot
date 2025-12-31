@@ -12,7 +12,7 @@ const MODERATION_ENABLED_GROUPS = [
 ];
 
 // Admin-only commands (global)
-const ADMIN_ONLY_COMMANDS = ["/tagall", "/reminder", "/groupid"];
+const ADMIN_ONLY_COMMANDS = ["/reminder", "/groupid"];
 
 // General commands (available everywhere)
 const GENERAL_COMMANDS = ["/help", "/meme", "/abuse"];
